@@ -1,0 +1,372 @@
+{
+  "schemaVersion": "v3.github-ledger.1",
+  "generatedAt": "2026-05-07T14:47:56.647Z",
+  "evaluatorVersion": "unified-evaluator-v1",
+  "project": "ai-prompt-generator-v3",
+  "artifactType": "image_prompt",
+  "promptId": "d5836d93-efa9-47d6-bfa2-ee6e235827be",
+  "promptVersionId": "92c423d2-2e58-42fd-b0ef-a016d0ec310a",
+  "targetModelId": "gpt-image-2",
+  "redactedInput": "生成 GPT Image 2 商业海报提示词，中文标题准确，不能有幻觉，必须保留用户意图",
+  "aiEvaluation": {
+    "scores": {
+      "hallucination_resistance": 8.8,
+      "user_intent_alignment": 8.7,
+      "completeness": 8,
+      "factual_accuracy": 9,
+      "actionability": 8,
+      "format_compliance": 9,
+      "model_specific_optimization": 8,
+      "safety": 9.4,
+      "consistency": 9,
+      "maintainability": 9,
+      "testability": 9,
+      "image_prompt_quality": 8.1
+    },
+    "findings": [
+      {
+        "id": "human:high",
+        "icon": "yellow",
+        "dimension": "human_feedback",
+        "score": 6.4,
+        "reason": "human_feedback_has_highest_priority",
+        "source": "human",
+        "priority": 10
+      },
+      {
+        "id": "memory:hallucination_resistance",
+        "icon": "yellow",
+        "dimension": "hallucination_resistance",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "memory:object_proportion",
+        "icon": "yellow",
+        "dimension": "object_proportion",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "memory:text_rendering",
+        "icon": "yellow",
+        "dimension": "text_rendering",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "memory:user_intent_alignment",
+        "icon": "yellow",
+        "dimension": "user_intent_alignment",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "actionability:8.0",
+        "icon": "yellow",
+        "dimension": "actionability",
+        "score": 8,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      },
+      {
+        "id": "completeness:8.0",
+        "icon": "yellow",
+        "dimension": "completeness",
+        "score": 8,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      },
+      {
+        "id": "image_prompt_quality:8.1",
+        "icon": "yellow",
+        "dimension": "image_prompt_quality",
+        "score": 8.1,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      },
+      {
+        "id": "model_specific_optimization:8.0",
+        "icon": "yellow",
+        "dimension": "model_specific_optimization",
+        "score": 8,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      },
+      {
+        "id": "hallucination_resistance:8.8",
+        "icon": "green",
+        "dimension": "hallucination_resistance",
+        "score": 8.8,
+        "reason": "green_but_below_9_quality_target",
+        "source": "ai",
+        "priority": 38
+      },
+      {
+        "id": "user_intent_alignment:8.7",
+        "icon": "green",
+        "dimension": "user_intent_alignment",
+        "score": 8.7,
+        "reason": "green_but_below_9_quality_target",
+        "source": "ai",
+        "priority": 48
+      }
+    ]
+  },
+  "humanEvaluation": {
+    "score": 64,
+    "notes": "人工评价优先：中文文字和比例不稳，黄色问题必须先修，幻觉和意图虽然是绿色但低于 9.0 也要继续优化。",
+    "severity": "high",
+    "priority": "highest",
+    "overridesAi": true
+  },
+  "yellowItems": [
+    {
+      "id": "human:high",
+      "icon": "yellow",
+      "dimension": "human_feedback",
+      "score": 6.4,
+      "reason": "human_feedback_has_highest_priority",
+      "source": "human",
+      "priority": 10
+    },
+    {
+      "id": "memory:hallucination_resistance",
+      "icon": "yellow",
+      "dimension": "hallucination_resistance",
+      "score": null,
+      "reason": "feedback_memory_repeated_issue",
+      "source": "memory",
+      "priority": 25
+    },
+    {
+      "id": "memory:object_proportion",
+      "icon": "yellow",
+      "dimension": "object_proportion",
+      "score": null,
+      "reason": "feedback_memory_repeated_issue",
+      "source": "memory",
+      "priority": 25
+    },
+    {
+      "id": "memory:text_rendering",
+      "icon": "yellow",
+      "dimension": "text_rendering",
+      "score": null,
+      "reason": "feedback_memory_repeated_issue",
+      "source": "memory",
+      "priority": 25
+    },
+    {
+      "id": "memory:user_intent_alignment",
+      "icon": "yellow",
+      "dimension": "user_intent_alignment",
+      "score": null,
+      "reason": "feedback_memory_repeated_issue",
+      "source": "memory",
+      "priority": 25
+    },
+    {
+      "id": "actionability:8.0",
+      "icon": "yellow",
+      "dimension": "actionability",
+      "score": 8,
+      "reason": "yellow_score_threshold_triggered",
+      "source": "ai",
+      "priority": 30
+    },
+    {
+      "id": "completeness:8.0",
+      "icon": "yellow",
+      "dimension": "completeness",
+      "score": 8,
+      "reason": "yellow_score_threshold_triggered",
+      "source": "ai",
+      "priority": 30
+    },
+    {
+      "id": "image_prompt_quality:8.1",
+      "icon": "yellow",
+      "dimension": "image_prompt_quality",
+      "score": 8.1,
+      "reason": "yellow_score_threshold_triggered",
+      "source": "ai",
+      "priority": 30
+    },
+    {
+      "id": "model_specific_optimization:8.0",
+      "icon": "yellow",
+      "dimension": "model_specific_optimization",
+      "score": 8,
+      "reason": "yellow_score_threshold_triggered",
+      "source": "ai",
+      "priority": 30
+    }
+  ],
+  "greenBelowNineItems": [
+    {
+      "id": "hallucination_resistance:8.8",
+      "icon": "green",
+      "dimension": "hallucination_resistance",
+      "score": 8.8,
+      "reason": "green_but_below_9_quality_target",
+      "source": "ai",
+      "priority": 38
+    },
+    {
+      "id": "user_intent_alignment:8.7",
+      "icon": "green",
+      "dimension": "user_intent_alignment",
+      "score": 8.7,
+      "reason": "green_but_below_9_quality_target",
+      "source": "ai",
+      "priority": 48
+    }
+  ],
+  "redItems": [],
+  "feedbackMemoryDelta": {
+    "id": "fm_1778165276632",
+    "artifactId": "d5836d93-efa9-47d6-bfa2-ee6e235827be",
+    "artifactType": "image_prompt",
+    "versionId": "92c423d2-2e58-42fd-b0ef-a016d0ec310a",
+    "targetModelId": "gpt-image-2",
+    "humanOverridesAi": true,
+    "repeatedIssueKeys": [
+      "hallucination_resistance",
+      "user_intent_alignment",
+      "text_rendering",
+      "object_proportion"
+    ],
+    "effectiveStrategies": [],
+    "ineffectiveStrategies": [],
+    "yellowItems": [
+      {
+        "id": "human:high",
+        "icon": "yellow",
+        "dimension": "human_feedback",
+        "score": 6.4,
+        "reason": "human_feedback_has_highest_priority",
+        "source": "human",
+        "priority": 10
+      },
+      {
+        "id": "memory:hallucination_resistance",
+        "icon": "yellow",
+        "dimension": "hallucination_resistance",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "memory:object_proportion",
+        "icon": "yellow",
+        "dimension": "object_proportion",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "memory:text_rendering",
+        "icon": "yellow",
+        "dimension": "text_rendering",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "memory:user_intent_alignment",
+        "icon": "yellow",
+        "dimension": "user_intent_alignment",
+        "score": null,
+        "reason": "feedback_memory_repeated_issue",
+        "source": "memory",
+        "priority": 25
+      },
+      {
+        "id": "actionability:8.0",
+        "icon": "yellow",
+        "dimension": "actionability",
+        "score": 8,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      },
+      {
+        "id": "completeness:8.0",
+        "icon": "yellow",
+        "dimension": "completeness",
+        "score": 8,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      },
+      {
+        "id": "image_prompt_quality:8.1",
+        "icon": "yellow",
+        "dimension": "image_prompt_quality",
+        "score": 8.1,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      },
+      {
+        "id": "model_specific_optimization:8.0",
+        "icon": "yellow",
+        "dimension": "model_specific_optimization",
+        "score": 8,
+        "reason": "yellow_score_threshold_triggered",
+        "source": "ai",
+        "priority": 30
+      }
+    ],
+    "greenBelowNineItems": [
+      {
+        "id": "hallucination_resistance:8.8",
+        "icon": "green",
+        "dimension": "hallucination_resistance",
+        "score": 8.8,
+        "reason": "green_but_below_9_quality_target",
+        "source": "ai",
+        "priority": 38
+      },
+      {
+        "id": "user_intent_alignment:8.7",
+        "icon": "green",
+        "dimension": "user_intent_alignment",
+        "score": 8.7,
+        "reason": "green_but_below_9_quality_target",
+        "source": "ai",
+        "priority": 48
+      }
+    ],
+    "createdAt": "2026-05-07T14:47:56.632Z"
+  },
+  "optimization": {
+    "triggered": true,
+    "newVersionId": "659fb92f-16c0-4e20-a74c-fad713f5e0da",
+    "status": "candidate"
+  },
+  "regression": {
+    "required": true,
+    "commands": [
+      "npm run test:compiled",
+      "npm run quality:golden",
+      "npm run schema:validate"
+    ]
+  }
+}
