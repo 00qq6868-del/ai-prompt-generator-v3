@@ -117,3 +117,40 @@ Final test counts:
   - feedback blend: total 82.7, intent 10, hallucination 9.
 
 No V3 test server was left running.
+
+## 2026-05-07 Upload And Enablement
+
+User asked to continue any unfinished work, then upload to GitHub and enable.
+
+Actions:
+
+- Added AI Workbench command integration:
+  - `prompt-v3`
+  - `prompt-v3-dev`
+  - `prompt-v3-start`
+  - `prompt-v3-verify`
+  - `prompt-v3-smoke`
+  - `prompt-v3-e2e`
+  - `prompt-v3-open`
+- Added root entry:
+  - `E:\AI工作台\AI-PROMPT-GENERATOR-V3.cmd`
+- Updated:
+  - `E:\AI工作台\00_AI_WORKBENCH_MANIFEST.json`
+  - `E:\AI工作台\00_AI_WORKBENCH_UPLOAD_ME.md`
+  - `E:\AI工作台\AI_AGENT_START_HERE.md`
+- Ran workbench-level verification:
+  - `AI-CHAIN.cmd prompt-v3-verify`
+  - passed typecheck, tests, comparison validate, golden quality, schema validate, build, HTTP smoke, Playwright E2E, and npm audit.
+- Initialized Git repository in the V3 folder.
+- Committed initial implementation:
+  - `7bd9a03 Initial AI Prompt Generator V3 clean-room rebuild`
+- Created and pushed public GitHub repo:
+  - `https://github.com/00qq6868-del/ai-prompt-generator-v3`
+- Watched GitHub Actions:
+  - run `25474916085`
+  - result: success
+
+Important note:
+
+- `.local-data`, `.next`, `dist`, `dist-tests`, and `node_modules` remain ignored and were not uploaded.
+- Secret scan before commit only found sanitizer regex code and non-secret test text.

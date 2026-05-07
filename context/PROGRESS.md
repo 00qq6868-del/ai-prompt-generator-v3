@@ -85,4 +85,36 @@ Current status:
 
 - V3 is usable as the clean-room prompt generator core.
 - Old project remains read-only benchmark/reference.
-- V3 directory is not currently a git repository; do not claim commit status unless a repo is initialized later.
+- V3 is uploaded to GitHub and enabled through the AI Workbench command layer.
+
+## 2026-05-07 — GitHub Upload And Workbench Enablement
+
+Uploaded and enabled V3.
+
+GitHub:
+
+- Repository: `https://github.com/00qq6868-del/ai-prompt-generator-v3`
+- Visibility: public.
+- Default branch: `main`.
+- Initial commit: `7bd9a038d9ebdba59aad80ae4fd69d6c0f9eb08b`
+- GitHub Actions run: `https://github.com/00qq6868-del/ai-prompt-generator-v3/actions/runs/25474916085`
+- CI conclusion: success.
+
+Workbench enablement:
+
+- Added root launcher: `E:\AI工作台\AI-PROMPT-GENERATOR-V3.cmd`
+- Added AI Chain commands:
+  - `AI-CHAIN.cmd prompt-v3`
+  - `AI-CHAIN.cmd prompt-v3-dev`
+  - `AI-CHAIN.cmd prompt-v3-start`
+  - `AI-CHAIN.cmd prompt-v3-verify`
+  - `AI-CHAIN.cmd prompt-v3-smoke`
+  - `AI-CHAIN.cmd prompt-v3-e2e`
+  - `AI-CHAIN.cmd prompt-v3-open`
+- Updated workbench manifest and AI upload/start docs so future AI sees V3 as an enabled project.
+
+Validation:
+
+- `AI-CHAIN.cmd prompt-v3-verify` passed before upload.
+- GitHub CI passed after upload.
+- `AI-CHAIN.cmd prompt-v3` shows the GitHub remote and clean tracking state.
