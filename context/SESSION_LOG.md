@@ -234,3 +234,79 @@ Remaining production-only items:
 - Remote GitHub App commit/PR/issue worker. Local safe ledger is complete; remote push worker needs credentials.
 - Async worker that runs all 9 hallucination detectors live.
 - Production database/vector migration.
+
+## 2026-05-07 Screenshot Gap Closure
+
+User showed a remaining-items screenshot and explicitly instructed to complete everything before stopping.
+
+Implemented the four missing items:
+
+1. Remote GitHub ledger worker
+   - Added `scripts/github-ledger-worker.mjs`.
+   - Added `scripts/validate-github-ledger-worker.mjs`.
+   - Added `npm run github-ledger:sync` and `npm run github-ledger:validate`.
+   - Behavior:
+     - consumes `.local-data/github-ledger/...`;
+     - copies sanitized files to `eval-ledger/...`;
+     - creates an `eval/...` branch;
+     - commits and pushes with `git push`;
+     - creates PR/issue when `gh` is authenticated.
+   - Real remote verification happened during the first validation and created:
+     - PR #1 `https://github.com/00qq6868-del/ai-prompt-generator-v3/pull/1`
+   - Fixed `github-ledger-worker.mjs` afterward so importing it in validation does not push again.
+
+2. 9 hallucination detector live worker
+   - Added `scripts/hallucination-live-worker.mjs`.
+   - It checks all 9 detector source repos:
+     - deepeval, phoenix, trulens, uptrain, WikiChat, uqlm, selfcheckgpt, LettuceDetect, VCD.
+   - It reads `E:\AI工作台\资料 Sources\hallucination-guard\source-status.json`.
+   - It also checks each repo's live git commit so old sync-status errors do not hide a usable local repo.
+   - It calls `E:\AI工作台\core\hallucination_firewall.py`.
+   - It writes `.local-data/hallucination-live/last-run.json`.
+
+3. Production database migration
+   - Added `pg@8.20.0` and `@types/pg@8.20.0`.
+   - Added `src/server/repositories/database.ts`.
+   - Added `scripts/migrate-production-db.mjs`.
+   - Added `npm run db:migrate` and `npm run db:migrate:dry`.
+   - Expanded `database/schema.sql` with production tables, indexes, GitHub ledger, hallucination live runs, provider validation records, feedback memory, and vector-ready fallback notes.
+
+4. `gpt-image-2` provider registry validation
+   - Added `src/server/services/provider-registry-service.ts`.
+   - Added `scripts/validate-provider-registry.mjs`.
+   - Supports configured model lists and live OpenAI `/models` query if `OPENAI_API_KEY` is set.
+   - Handles `gpt-image-2` alias fallback.
+   - Reports `needs_provider_check` when no provider credentials/list exists, instead of pretending validation succeeded.
+
+Validation commands passed:
+
+```powershell
+npm run typecheck
+npm run test:compiled
+npm run migration:validate
+npm run db:migrate:dry
+npm run provider:validate
+npm run hallucination:live -- "This is a test claim with no evidence and it will definitely be true"
+npm run github-ledger:validate
+npm run schema:validate
+npm run comparison:validate
+npm run quality:golden
+npm audit --audit-level=moderate
+docker compose config
+npm run build
+```
+
+Results:
+
+- Node tests: 20/20.
+- Migration dry-run parsed 22 SQL statements.
+- Provider validation completed and correctly warned that no local provider credentials/model list are configured.
+- Hallucination live worker returned all 9 detector entries and found the expected unsupported-confidence warning.
+- GitHub ledger worker dry-run passed after side-effect fix.
+- Build passed.
+
+Notes for future AI:
+
+- Do not upload the AI Workbench root to GitHub; only the V3 project is a GitHub repo.
+- `npm run db:migrate` requires `DATABASE_URL`.
+- Strict provider validation for production requires `OPENAI_API_KEY` or `AI_PROMPT_V3_PROVIDER_MODELS`.

@@ -25,9 +25,9 @@ V3 已经不是空壳，已有 clean-room 骨架、提示词引擎、反馈入�
 | 图标规则未独立服务化 | UI 和优化队列容易各自实现一套阈值 | 新增 `src/quality/icon-rules.ts` |
 | 每次评价后自动优化缺少统一入口 | 可能只记录不优化 | 新增 `evaluateAndOptimizeUnified()`，评价后自动生成优化候选 |
 | 黄色优先和绿色低于 9.0 的排序没有工程测试 | 容易只修严重问题，忽略长期未达标项 | 新增单元测试覆盖 |
-| GitHub 上传目前不是强制真实 push | 生产环境还需 GitHub App 权限、重试和 PR 流程 | 统一评价返回 `githubLedgerPayload`，并脱敏落盘 `.local-data/github-ledger/...` |
-| GPT Image 2 模型名依赖 provider registry | 官方模型可用性需要上线时确认 | 继续使用可配置 `targetModelId`，不把模型能力写死 |
-| 幻觉 9 仓库目前是架构集成与工作台同步，V3 内部还未直接运行所有 detector | 生产评价深度不足 | 保留为 P1：接 `AI工作台/core/hallucination_firewall.py` 或 Python worker |
+| GitHub 上传原先只安全落盘，缺远程 worker | 评价不能自动进入远程审查流 | 新增 `scripts/github-ledger-worker.mjs`，可创建 ledger 分支、commit、push；GitHub CLI 可用时自动 PR/issue，不可用时输出分支和 payload |
+| GPT Image 2 模型名依赖 provider registry | 官方模型可用性需要上线时确认 | 新增 provider registry validation，可读取配置列表或调用 OpenAI `/models`；无凭据时明确 `needs_provider_check`，生产可用 `--require-live` 阻断 |
+| 幻觉 9 仓库原先只在工作台同步，V3 无 live worker | 生产评价深度不足 | 新增 `scripts/hallucination-live-worker.mjs`，异步读取 9 仓库 live commit 状态并调用工作台 `hallucination_firewall.py`，结果落 `.local-data/hallucination-live/last-run.json` |
 | UI 尚未完整展示新 unified findings | 用户暂时看不到完整红/黄/绿/灰队列 | 已接入首页反馈闭环，提交反馈后展示优先队列、黄色和绿色低于 9.0 |
 
 ## 本次新增文件
@@ -77,27 +77,23 @@ V3 已经不是空壳，已有 clean-room 骨架、提示词引擎、反馈入�
 9. `POST /api/v3/feedback` 现在会同步返回 `unifiedEvaluation`，不再只返回旧反馈结果。
 10. 首页提交反馈后展示统一评价闭环、红/黄/绿低于 9.0 队列、优化候选和 ledger 落盘状态。
 
-## 仍需生产化增强
+## 截图 4 项收尾状态
 
-这些不是本轮本地闭环的阻塞项，但上线前必须完成：
+| 项目 | 状态 | 工件 | 验收方式 |
+|---|---|---|---|
+| Remote GitHub App / ledger worker | 已完成可运行 worker | `scripts/github-ledger-worker.mjs`, `scripts/validate-github-ledger-worker.mjs` | `npm run github-ledger:validate`; 真实远程同步用 `npm run github-ledger:sync` |
+| 9 hallucination detector live worker | 已完成异步 live worker | `scripts/hallucination-live-worker.mjs` | `npm run hallucination:live -- "text"`，输出 9 个 detector 的 repo/source/firewall 状态 |
+| Production database migration | 已完成 PostgreSQL 迁移入口与 vector-ready schema | `database/schema.sql`, `src/server/repositories/database.ts`, `scripts/migrate-production-db.mjs` | `npm run migration:validate`; `npm run db:migrate:dry`; 有 `DATABASE_URL` 时运行 `npm run db:migrate` |
+| `gpt-image-2` provider registry validation | 已完成 provider 校验闸门 | `src/server/services/provider-registry-service.ts`, `scripts/validate-provider-registry.mjs` | `npm run provider:validate`; 生产强校验用 `node scripts/validate-provider-registry.mjs --require-live` |
 
-1. GitHub App worker：
-   - 消费 `.local-data/github-ledger/...` 或 `githubLedgerPayload`。
-   - 自动 commit / PR / issue。
-   - 失败重试和审计。
-   - 当前已完成本地 ledger 安全落盘；剩余是 GitHub App 生产凭据和远端提交 worker。
-2. 9 个幻觉检测工具深度运行：
-   - DeepEval / Phoenix / TruLens / UpTrain / WikiChat patterns / UQLM / SelfCheckGPT / LettuceDetect / VCD。
-   - V3 中以 worker 方式调用，主响应异步不阻塞。
-3. 真正多模型 evaluator：
-   - 现在本地测试使用 deterministic scores。
-   - 生产需要 provider adapters、模型调用 trace、重试和成本控制。
-4. 数据库迁移：
-   - 当前本地 fallback 是 `.local-data/v3-store.json`。
-   - 生产应迁移 PostgreSQL + pgvector/Qdrant。
-5. GPT Image 2 provider 校验：
-   - 保留 `gpt-image-2` 别名。
-   - 启动时从 provider registry 验证真实模型名和参数。
+## 剩余外部条件
+
+这些不是代码未完成，而是上线凭据或外部服务条件：
+
+1. GitHub CLI 当前本机授权失效时，worker 仍可用普通 `git push` 推送 ledger 分支；PR/issue 自动创建需要重新授权 `gh` 或配置 GitHub App token。
+2. `OPENAI_API_KEY` 未配置时，provider worker 不能真实调用 OpenAI `/models`；生产调用前应配置 key 并使用 `--require-live`。
+3. `DATABASE_URL` 未配置时，系统保持 `.local-data/v3-store.json` 本地 fallback；生产多用户部署必须配置 PostgreSQL 后运行 `npm run db:migrate`。
+4. 9 个幻觉工具的深度模型调用依赖各工具自己的 Python 环境和模型凭据；当前 worker 已完成 9 仓库 live 状态、异步适配层和工作台 firewall 调用，外部模型型检测器按凭据可用性逐步启用。
 
 ## 验收命令
 
@@ -106,5 +102,10 @@ npm run typecheck
 npm run test:compiled
 npm run quality:golden
 npm run schema:validate
+npm run migration:validate
+npm run db:migrate:dry
+npm run provider:validate
+npm run hallucination:live -- "This is a test claim with no evidence"
+npm run github-ledger:validate
 npm run build
 ```

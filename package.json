@@ -15,22 +15,30 @@
     "comparison:validate": "npm run build:test && node dist-tests/tests/validate-comparison.js",
     "quality:golden": "npm run build:test && node dist-tests/tests/run-golden-quality.js",
     "schema:validate": "node scripts/validate-schema.mjs",
+    "migration:validate": "node scripts/validate-production-migration.mjs",
+    "db:migrate": "npm run build:test && node scripts/migrate-production-db.mjs",
+    "db:migrate:dry": "npm run build:test && node scripts/migrate-production-db.mjs --dry-run",
+    "provider:validate": "npm run build:test && node scripts/validate-provider-registry.mjs",
+    "hallucination:live": "node scripts/hallucination-live-worker.mjs",
+    "github-ledger:sync": "node scripts/github-ledger-worker.mjs",
+    "github-ledger:validate": "npm run build:test && node scripts/validate-github-ledger-worker.mjs",
     "smoke:http": "node scripts/v3-http-smoke.mjs",
     "e2e:playwright": "node scripts/v3-playwright-e2e.mjs"
   },
   "dependencies": {
     "@next/env": "^16.0.7",
-    "playwright": "^1.57.0",
-    "next": "^16.0.7",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
     "@types/node": "^22.19.0",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "next": "^16.0.7",
+    "pg": "^8.20.0",
+    "playwright": "^1.57.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "typescript": "^5.9.0"
   },
   "overrides": {
     "postcss": "^8.5.10"
-  },
-  "devDependencies": {}
+  }
 }

@@ -9,6 +9,8 @@ import { comparePromptVersions, decidePromptVersion } from "../src/server/servic
 import { getModelPreference, saveModelPreference } from "../src/server/repositories/local-store.js";
 import { evaluateAndOptimizeUnified } from "../src/server/services/unified-evaluation-service.js";
 import { writeGithubLedgerPayload } from "../src/server/services/github-ledger-service.js";
+import { validateProviderModel, validateAllProviderModels } from "../src/server/services/provider-registry-service.js";
+import { runProductionMigration } from "../src/server/repositories/database.js";
 
 test("service loop generates prompt, stores feedback, test run, and synthetic decision", async () => {
   const generated = await generatePromptV3({
@@ -223,4 +225,37 @@ test("github ledger writer persists sanitized evaluation payload", async () => {
   assert.ok(result.payloadPath.endsWith("evaluation-ledger.json"));
   assert.ok(result.privacyFindings.some((item) => item.reason === "email"));
   assert.ok(result.privacyFindings.some((item) => item.reason === "bearer_token"));
+});
+
+test("provider registry validates gpt-image-2 aliases and missing models", () => {
+  const fallback = validateProviderModel("gpt-image-2", {
+    source: "configured_list",
+    models: new Set(["gpt-image-1.5", "gpt-5.5"]),
+    warnings: [],
+  });
+  assert.equal(fallback.ok, true);
+  assert.equal(fallback.status, "alias_fallback");
+  assert.equal(fallback.resolvedModelId, "gpt-image-1.5");
+
+  const missing = validateProviderModel("gpt-image-2", {
+    source: "configured_list",
+    models: new Set(["gpt-5.5"]),
+    warnings: [],
+  });
+  assert.equal(missing.ok, false);
+  assert.equal(missing.status, "missing");
+
+  const needsProvider = validateAllProviderModels({
+    openai: { source: "none", models: new Set(), warnings: ["unit test no provider"] },
+    anthropic: { source: "none", models: new Set(), warnings: ["unit test no provider"] },
+  });
+  assert.equal(needsProvider.ok, true);
+  assert.ok(needsProvider.results.every((item) => item.status === "needs_provider_check"));
+});
+
+test("production migration dry run parses executable schema without requiring DATABASE_URL", async () => {
+  const migration = await runProductionMigration({ dryRun: true });
+  assert.equal(migration.ok, true);
+  assert.equal(migration.mode, "dry_run");
+  assert.ok(migration.statementCount >= 10);
 });

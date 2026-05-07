@@ -203,3 +203,61 @@ Validation:
 - `npm run quality:golden`: passed.
 - `npm run schema:validate`: passed.
 - `npm run build`: passed and includes `/api/v3/github-ledger/sync`.
+
+## 2026-05-07 — Screenshot Gap Closure: Remote Worker, Live Detectors, DB Migration, Provider Validation
+
+User showed 4 unfinished items and instructed not to stop until all were completed.
+
+Completed:
+
+- Remote GitHub ledger worker:
+  - Added `scripts/github-ledger-worker.mjs`.
+  - Copies sanitized `.local-data/github-ledger/...` into tracked `eval-ledger/...`.
+  - Creates an `eval/<date>/ledger-<timestamp>` branch.
+  - Commits ledger files and pushes with normal `git push`.
+  - Creates PR/issue through `gh` when GitHub CLI auth is valid.
+  - Added `scripts/validate-github-ledger-worker.mjs` and `npm run github-ledger:validate` as dry-run validation.
+  - Real worker was verified accidentally during first validation and successfully created PR #1:
+    - `https://github.com/00qq6868-del/ai-prompt-generator-v3/pull/1`
+  - Fixed import side effect afterward so validation no longer pushes.
+- 9 hallucination detector live worker:
+  - Added `scripts/hallucination-live-worker.mjs`.
+  - Reads the AI Workbench source status and also checks live git repo state for all 9 detectors:
+    - deepeval, phoenix, trulens, uptrain, WikiChat, uqlm, selfcheckgpt, LettuceDetect, VCD.
+  - Calls `E:\AI工作台\core\hallucination_firewall.py check-text --strictness strict`.
+  - Writes `.local-data/hallucination-live/last-run.json`.
+  - Verified all 9 detector sources are available from live git state.
+- Production database migration:
+  - Added `src/server/repositories/database.ts`.
+  - Added `scripts/migrate-production-db.mjs`.
+  - Added `npm run db:migrate` and `npm run db:migrate:dry`.
+  - Added `pg@8.20.0` and `@types/pg@8.20.0`.
+  - Expanded `database/schema.sql` with feedback memory, GitHub ledger, hallucination live run, provider validation, indexes, and vector-ready fallback notes.
+- `gpt-image-2` provider registry validation:
+  - Added `src/server/services/provider-registry-service.ts`.
+  - Added `scripts/validate-provider-registry.mjs`.
+  - Supports configured provider lists and live OpenAI `/models` query when `OPENAI_API_KEY` is present.
+  - Preserves `gpt-image-2` alias and validates fallback models such as `gpt-image-1.5`.
+  - No provider key on this machine, so validation reports `needs_provider_check` instead of fabricating success.
+
+Validation:
+
+- `npm run typecheck`: passed.
+- `npm run test:compiled`: passed, 20/20.
+- `npm run migration:validate`: passed.
+- `npm run db:migrate:dry`: passed, 22 statements parsed, local JSON fallback active because no `DATABASE_URL`.
+- `npm run provider:validate`: passed with `needs_provider_check` warnings because provider credentials are absent.
+- `npm run hallucination:live -- "This is a test claim with no evidence and it will definitely be true"`: passed and returned all 9 detector entries.
+- `npm run github-ledger:validate`: passed dry-run after side-effect fix.
+- `npm run schema:validate`: passed.
+- `npm run comparison:validate`: passed.
+- `npm run quality:golden`: passed.
+- `npm audit --audit-level=moderate`: 0 vulnerabilities.
+- `docker compose config`: passed.
+- `npm run build`: passed.
+
+External conditions:
+
+- `DATABASE_URL` is required to execute a real production migration with `npm run db:migrate`.
+- `OPENAI_API_KEY` or `AI_PROMPT_V3_PROVIDER_MODELS` is required for hard production provider validation.
+- GitHub CLI auth is currently valid enough to create PR #1 during this pass; if it later expires, the worker still pushes branches with normal git and emits review details.
