@@ -1,5 +1,6 @@
 import { errorJson, okJson } from "../../../../server/http/response.js";
 import { submitFeedbackV3 } from "../../../../server/services/feedback-loop-service.js";
+import { evaluateAndOptimizeUnified } from "../../../../server/services/unified-evaluation-service.js";
 
 export const runtime = "nodejs";
 
@@ -19,5 +20,16 @@ export async function POST(req: Request) {
     preference: body.preference,
     userNotes: String(body.userNotes ?? ""),
   });
-  return okJson(result);
+  const artifactType = String(body.artifactType ?? "text_prompt");
+  const unified = await evaluateAndOptimizeUnified({
+    artifactType: ["text_prompt", "image_prompt", "workbench_task", "system_prompt", "rag_prompt"].includes(artifactType) ? artifactType as any : "text_prompt",
+    promptId,
+    promptVersionId,
+    ...(body.targetModelId === undefined ? {} : { targetModelId: String(body.targetModelId) }),
+    humanScore: Number(body.userScore ?? 0),
+    humanNotes: String(body.userNotes ?? ""),
+    humanSeverity: Number(body.userScore ?? 100) < 70 ? "high" : "medium",
+    githubSyncMode: "payload_only",
+  });
+  return okJson({ ...result, unifiedEvaluation: unified.ok ? unified : null });
 }

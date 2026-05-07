@@ -196,3 +196,41 @@ Still production-hardening only:
 - Add UI panels for unified red/yellow/green/gray findings.
 - Wire all 9 hallucination detectors through an async worker.
 - Move local JSON fallback to PostgreSQL/vector storage for production.
+
+## 2026-05-07 GitHub Ledger And Unified Findings UI
+
+User said to continue if anything was not complete.
+
+Implemented:
+
+- `src/server/services/github-ledger-service.ts`
+  - Local safe ledger writer for every unified evaluation.
+  - Writes under `.local-data/github-ledger/...`.
+  - Generates `evaluation-ledger.json`, `quality-report.md`, and `diff.patch`.
+  - Redacts API keys, cookies, bearer tokens, private keys, and emails.
+- `src/app/api/v3/github-ledger/sync/route.ts`
+  - Explicit API for writing ledger payloads.
+- `src/app/api/v3/feedback/route.ts`
+  - Feedback save now also runs unified evaluation.
+  - Response includes unified findings, ledger write result, and optimization candidate.
+- `src/app/page.tsx` and `src/app/globals.css`
+  - UI now shows unified evaluation queue after feedback submit.
+  - Shows human override, yellow count, green-below-9 count, optimization candidate, and ledger path.
+- `src/test-site-client/v3-client.ts`
+  - Feedback payload now carries `artifactType` and `targetModelId`.
+- `tests/services.test.ts`
+  - Added ledger writer sanitization test.
+
+Validation:
+
+- `npm run typecheck`: passed.
+- `npm run test:compiled`: passed, 18/18.
+- `npm run quality:golden`: passed.
+- `npm run schema:validate`: passed.
+- `npm run build`: passed and includes `/api/v3/github-ledger/sync`.
+
+Remaining production-only items:
+
+- Remote GitHub App commit/PR/issue worker. Local safe ledger is complete; remote push worker needs credentials.
+- Async worker that runs all 9 hallucination detectors live.
+- Production database/vector migration.

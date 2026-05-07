@@ -2,6 +2,7 @@ import type { ArtifactType, EvaluationScoreSet, FeedbackMemoryDelta } from "../.
 import { buildQualityFindings, partitionFindings, shouldOptimize } from "../../quality/icon-rules.js";
 import { estimatePromptScores, weightedScore } from "../../quality/quality-gate.js";
 import { createPromptVersion, getPrompt, getPromptVersion } from "../repositories/local-store.js";
+import { writeGithubLedgerPayload } from "./github-ledger-service.js";
 import { buildSyntheticBlend } from "./prompt-version-service.js";
 
 function nowIso(): string {
@@ -143,6 +144,10 @@ export async function evaluateAndOptimizeUnified(input: {
     },
   };
 
+  const githubLedger = input.githubSyncMode === "disabled"
+    ? null
+    : await writeGithubLedgerPayload({ payload: githubLedgerPayload, projectSlug: "ai-prompt-generator-v3", dryRun: input.githubSyncMode === "payload_only" });
+
   return {
     ok: true as const,
     scores,
@@ -152,5 +157,6 @@ export async function evaluateAndOptimizeUnified(input: {
     optimizationCandidate,
     feedbackMemoryDelta: memoryDelta,
     githubLedgerPayload,
+    githubLedger,
   };
 }

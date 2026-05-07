@@ -168,6 +168,59 @@ button {
   background: rgba(0, 0, 0, 0.18);
 }
 
+.prompt-output.small-output {
+  min-height: 54px;
+  max-height: 160px;
+  margin-top: 10px;
+}
+
+.wide-panel {
+  grid-column: 1 / -1;
+}
+
+.issue-list {
+  display: grid;
+  gap: 8px;
+}
+
+.issue {
+  display: grid;
+  grid-template-columns: 86px minmax(160px, 1fr) 56px minmax(220px, 2fr);
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 9px 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.issue small {
+  color: var(--muted);
+}
+
+.issue-icon {
+  font-size: 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 7px;
+  text-align: center;
+}
+
+.issue-red .issue-icon {
+  color: var(--danger);
+  border-color: rgba(251, 113, 133, 0.5);
+}
+
+.issue-yellow .issue-icon {
+  color: var(--warn);
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.issue-green .issue-icon {
+  color: var(--accent);
+  border-color: rgba(52, 211, 153, 0.45);
+}
+
 .pill {
   display: inline-flex;
   align-items: center;

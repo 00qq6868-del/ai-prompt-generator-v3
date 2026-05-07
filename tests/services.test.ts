@@ -8,6 +8,7 @@ import { exportDatasetJsonlV3 } from "../src/server/services/dataset-export-serv
 import { comparePromptVersions, decidePromptVersion } from "../src/server/services/prompt-version-service.js";
 import { getModelPreference, saveModelPreference } from "../src/server/repositories/local-store.js";
 import { evaluateAndOptimizeUnified } from "../src/server/services/unified-evaluation-service.js";
+import { writeGithubLedgerPayload } from "../src/server/services/github-ledger-service.js";
 
 test("service loop generates prompt, stores feedback, test run, and synthetic decision", async () => {
   const generated = await generatePromptV3({
@@ -196,5 +197,30 @@ test("unified evaluation prioritizes human feedback, yellow findings, and green 
     assert.ok(evaluated.optimizationCandidate);
     assert.equal(evaluated.githubLedgerPayload.humanEvaluation.priority, "highest");
     assert.equal(evaluated.githubLedgerPayload.optimization.triggered, true);
+    assert.ok(evaluated.githubLedger?.payloadPath.endsWith("evaluation-ledger.json"));
   }
+});
+
+test("github ledger writer persists sanitized evaluation payload", async () => {
+  const result = await writeGithubLedgerPayload({
+    dryRun: true,
+    payload: {
+      generatedAt: new Date().toISOString(),
+      project: "ai-prompt-generator-v3",
+      artifactType: "text_prompt",
+      promptId: "prompt-secret-test",
+      promptVersionId: "version-secret-test",
+      redactedInput: "contact user@example.com and bearer abcdefghijklmnopqrstuvwxyz",
+      humanEvaluation: { priority: "highest" },
+      optimization: { triggered: true, status: "candidate" },
+      yellowItems: [{ dimension: "user_intent_alignment" }],
+      greenBelowNineItems: [{ dimension: "hallucination_resistance" }],
+      redItems: [],
+      regression: { commands: ["npm run test:compiled"] },
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.ok(result.payloadPath.endsWith("evaluation-ledger.json"));
+  assert.ok(result.privacyFindings.some((item) => item.reason === "email"));
+  assert.ok(result.privacyFindings.some((item) => item.reason === "bearer_token"));
 });

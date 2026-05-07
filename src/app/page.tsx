@@ -27,6 +27,31 @@ type GenerateResponse = {
   error?: { messageZh: string; messageEn: string };
 };
 
+type QualityFinding = {
+  id: string;
+  icon: "red" | "yellow" | "green" | "gray";
+  dimension: string;
+  score: number | null;
+  reason: string;
+  source: string;
+  priority: number;
+};
+
+type UnifiedEvaluationView = {
+  findings: QualityFinding[];
+  partitions: {
+    red: QualityFinding[];
+    yellow: QualityFinding[];
+    greenBelowNine: QualityFinding[];
+    gray: QualityFinding[];
+    priorityQueue: QualityFinding[];
+  };
+  needsOptimization: boolean;
+  optimizationCandidate?: { id: string; versionNumber: number; decisionStatus: string } | null;
+  feedbackMemoryDelta?: { humanOverridesAi: boolean; repeatedIssueKeys: string[] };
+  githubLedger?: { payloadPath: string; reportPath: string; privacyFindings: Array<{ field: string; reason: string }> } | null;
+};
+
 export default function HomePage() {
   const [userIdea, setUserIdea] = useState("用参考照片生成一张商业海报，保留人物身份，手里拿咖啡，标题是“早安计划”。");
   const [targetModelId, setTargetModelId] = useState("gpt-image-2");
@@ -39,11 +64,13 @@ export default function HomePage() {
   const [userNotes, setUserNotes] = useState("评分虚高，手部、文字和参考图一致性还要更严格。");
   const [feedbackStatus, setFeedbackStatus] = useState("");
   const [syncStatus, setSyncStatus] = useState("");
+  const [unifiedEvaluation, setUnifiedEvaluation] = useState<UnifiedEvaluationView | null>(null);
   const client = useMemo(() => new V3TestClient(), []);
 
   async function generate() {
     setLoading(true);
     setFeedbackStatus("");
+    setUnifiedEvaluation(null);
     try {
       const res = await fetch("/api/v3/prompts/generate", {
         method: "POST",
@@ -63,6 +90,7 @@ export default function HomePage() {
 
   async function submitFeedback() {
     if (!result?.data) return;
+    const artifactType: FeedbackPayloadArtifactType = result.data.modality === "image" ? "image_prompt" : "text_prompt";
     const payload = {
       eventId: `${result.data.promptId}:${result.data.versionId}:${Date.now()}`,
       promptId: result.data.promptId,
@@ -71,9 +99,13 @@ export default function HomePage() {
       starRating,
       preference,
       userNotes,
+      artifactType,
+      targetModelId,
     };
     const response = await client.submitFeedback(payload) as any;
-    setFeedbackStatus(response?.ok ? `反馈已保存，需要优化: ${response.data?.needsOptimization ? "是" : "否"}` : "反馈已进入离线队列");
+    const unified = response?.data?.unifiedEvaluation ?? null;
+    setUnifiedEvaluation(unified);
+    setFeedbackStatus(response?.ok ? `反馈已保存，需要优化: ${unified?.needsOptimization ?? response.data?.needsOptimization ? "是" : "否"}` : "反馈已进入离线队列");
   }
 
   async function syncTestRun() {
@@ -96,6 +128,14 @@ export default function HomePage() {
   }
 
   const quality = result?.qualityGate;
+  const priorityQueue = unifiedEvaluation?.partitions?.priorityQueue ?? [];
+
+  function iconLabel(icon: QualityFinding["icon"]) {
+    if (icon === "red") return "红色";
+    if (icon === "yellow") return "黄色";
+    if (icon === "green") return "绿色<9";
+    return "灰色";
+  }
 
   return (
     <main className="page-shell">
@@ -193,7 +233,50 @@ export default function HomePage() {
             {syncStatus && <p className="pill good">{syncStatus}</p>}
           </div>
         </section>
+
+        <section className="panel wide-panel">
+          <div className="panel-header">
+            <h2 className="panel-title">统一评价闭环：红 / 黄 / 绿低于 9.0</h2>
+          </div>
+          <div className="panel-body">
+            {unifiedEvaluation ? (
+              <>
+                <div className="metric-grid" style={{ marginBottom: 12 }}>
+                  <div className="metric"><span>需要自动优化</span><strong>{unifiedEvaluation.needsOptimization ? "是" : "否"}</strong></div>
+                  <div className="metric"><span>人工覆盖 AI</span><strong>{unifiedEvaluation.feedbackMemoryDelta?.humanOverridesAi ? "是" : "否"}</strong></div>
+                  <div className="metric"><span>黄色问题</span><strong>{unifiedEvaluation.partitions.yellow.length}</strong></div>
+                  <div className="metric"><span>绿色低于 9</span><strong>{unifiedEvaluation.partitions.greenBelowNine.length}</strong></div>
+                </div>
+                <div className="issue-list">
+                  {priorityQueue.map((item) => (
+                    <div key={item.id} className={`issue issue-${item.icon}`}>
+                      <span className="issue-icon">{iconLabel(item.icon)}</span>
+                      <strong>{item.dimension}</strong>
+                      <span>{item.score === null ? "n/a" : item.score.toFixed(1)}</span>
+                      <small>{item.reason} · {item.source} · priority {item.priority}</small>
+                    </div>
+                  ))}
+                </div>
+                <div className="row" style={{ marginTop: 12 }}>
+                  {unifiedEvaluation.optimizationCandidate && (
+                    <span className="pill warn">优化候选 v{unifiedEvaluation.optimizationCandidate.versionNumber}: {unifiedEvaluation.optimizationCandidate.decisionStatus}</span>
+                  )}
+                  {unifiedEvaluation.githubLedger?.payloadPath && (
+                    <span className="pill good">Ledger 已落盘</span>
+                  )}
+                </div>
+                {unifiedEvaluation.githubLedger?.payloadPath && (
+                  <pre className="prompt-output small-output">{unifiedEvaluation.githubLedger.payloadPath}</pre>
+                )}
+              </>
+            ) : (
+              <div className="prompt-output small-output">提交人工评价后，这里会显示统一评价队列。黄色优先；黄色完成后继续处理绿色但低于 9.0 的幻觉和用户意图。</div>
+            )}
+          </div>
+        </section>
       </div>
     </main>
   );
 }
+
+type FeedbackPayloadArtifactType = "text_prompt" | "image_prompt" | "workbench_task" | "system_prompt" | "rag_prompt";

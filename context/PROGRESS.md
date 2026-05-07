@@ -172,3 +172,34 @@ Remaining production hardening, not blockers for local V3 completion:
 - Full Python worker integration with all 9 hallucination detector repositories.
 - PostgreSQL/pgvector or Qdrant production migration.
 - Provider registry validation for the `gpt-image-2` alias.
+
+## 2026-05-07 — GitHub Ledger And Unified Findings UI
+
+User said to continue if anything was not complete.
+
+Completed additional closure:
+
+- Added `src/server/services/github-ledger-service.ts`.
+  - Writes sanitized evaluation ledgers under `.local-data/github-ledger/...`.
+  - Emits `evaluation-ledger.json`, `quality-report.md`, and `diff.patch`.
+  - Redacts API keys, cookies, bearer tokens, private keys, and emails.
+- Added `POST /api/v3/github-ledger/sync`.
+- Updated `POST /api/v3/feedback`.
+  - It still saves feedback.
+  - It now also runs unified evaluation.
+  - It returns `unifiedEvaluation`, `githubLedger`, priority queues, and optimization candidate status.
+- Updated UI.
+  - Submitting feedback now displays unified red/yellow/green-below-9 queue.
+  - Shows human-overrides-AI state.
+  - Shows automatic optimization candidate state.
+  - Shows local GitHub ledger path after safe ledger write.
+- Updated V3 test client typing for artifact type and target model.
+- Added tests for ledger writer sanitization.
+
+Validation:
+
+- `npm run typecheck`: passed.
+- `npm run test:compiled`: passed, 18/18.
+- `npm run quality:golden`: passed.
+- `npm run schema:validate`: passed.
+- `npm run build`: passed and includes `/api/v3/github-ledger/sync`.

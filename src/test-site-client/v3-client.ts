@@ -21,6 +21,8 @@ export interface FeedbackPayload {
   starRating: number;
   preference: "new_better" | "old_better" | "blend_needed" | "both_bad";
   userNotes: string;
+  artifactType?: "text_prompt" | "image_prompt" | "workbench_task" | "system_prompt" | "rag_prompt";
+  targetModelId?: string;
 }
 
 type QueueItem =
