@@ -154,3 +154,45 @@ Important note:
 
 - `.local-data`, `.next`, `dist`, `dist-tests`, and `node_modules` remain ignored and were not uploaded.
 - Secret scan before commit only found sanitizer regex code and non-secret test text.
+
+## 2026-05-07 Unified Evaluation Gap Closure
+
+User asked to identify defects, bad parts, and unfinished work, then finish everything feasible before stopping.
+
+Inspected current V3 implementation and found:
+
+- V3 already had prompt generation, feedback, image upload, dataset export, deterministic quality gate, comparison lab, GitHub repo, and CI.
+- It lacked a single unified evaluation service that always combines AI evaluation, human feedback priority, icon priority, feedback_memory delta, GitHub ledger payload, and automatic optimization.
+
+Implemented:
+
+- `src/quality/icon-rules.ts`
+- `src/server/services/unified-evaluation-service.ts`
+- `src/app/api/v3/evaluations/unified/route.ts`
+- `docs/IMPLEMENTATION_GAP_AUDIT_2026-05-07.md`
+- Updated `src/domain/types.ts`.
+- Updated `tests/services.test.ts`.
+
+Behavior added:
+
+- Human feedback is highest priority and sets `humanOverridesAi`.
+- Red/yellow/green/gray findings are generated from scores and human feedback.
+- Yellow findings are prioritized before green issues.
+- Green hallucination below 9.0 and green user-intent below 9.0 continue into optimization after yellow.
+- Every unified evaluation returns `githubLedgerPayload`.
+- Every unified evaluation with red/yellow/green-below-9 findings creates a synthetic optimization candidate.
+
+Validation:
+
+- `npm run typecheck`: passed.
+- `npm run test:compiled`: passed, 17/17.
+- `npm run quality:golden`: passed.
+- `npm run schema:validate`: passed.
+- `npm run build`: passed.
+
+Still production-hardening only:
+
+- Add a GitHub App worker that consumes `githubLedgerPayload` and pushes evaluation ledgers/PRs.
+- Add UI panels for unified red/yellow/green/gray findings.
+- Wire all 9 hallucination detectors through an async worker.
+- Move local JSON fallback to PostgreSQL/vector storage for production.

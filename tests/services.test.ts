@@ -7,6 +7,7 @@ import { saveTestRunImageV3 } from "../src/server/services/test-run-image-servic
 import { exportDatasetJsonlV3 } from "../src/server/services/dataset-export-service.js";
 import { comparePromptVersions, decidePromptVersion } from "../src/server/services/prompt-version-service.js";
 import { getModelPreference, saveModelPreference } from "../src/server/repositories/local-store.js";
+import { evaluateAndOptimizeUnified } from "../src/server/services/unified-evaluation-service.js";
 
 test("service loop generates prompt, stores feedback, test run, and synthetic decision", async () => {
   const generated = await generatePromptV3({
@@ -162,4 +163,38 @@ test("dataset export writes jsonl and masks secrets", async () => {
   assert.ok(exported.itemCount >= 1);
   assert.ok(exported.exportPath.endsWith(".jsonl"));
   assert.ok(exported.privacyFindings.length >= 1);
+});
+
+test("unified evaluation prioritizes human feedback, yellow findings, and green below 9", async () => {
+  const generated = await generatePromptV3({
+    userIdea: "生成 GPT Image 2 商业海报提示词，中文标题准确，不能有幻觉，必须保留用户意图",
+    targetModelId: "gpt-image-2",
+    hasReferenceImage: true,
+  });
+  const evaluated = await evaluateAndOptimizeUnified({
+    artifactType: "image_prompt",
+    promptId: generated.prompt.id,
+    promptVersionId: generated.version.id,
+    targetModelId: "gpt-image-2",
+    aiScores: {
+      hallucination_resistance: 8.8,
+      user_intent_alignment: 8.7,
+      image_prompt_quality: 8.1,
+      safety: 9.4,
+    },
+    humanScore: 64,
+    humanSeverity: "high",
+    humanNotes: "人工评价优先：中文文字和比例不稳，黄色问题必须先修，幻觉和意图虽然是绿色但低于 9.0 也要继续优化。",
+  });
+  assert.equal(evaluated.ok, true);
+  if (evaluated.ok) {
+    assert.equal(evaluated.feedbackMemoryDelta.humanOverridesAi, true);
+    assert.equal(evaluated.needsOptimization, true);
+    assert.ok(evaluated.partitions.yellow.some((item) => item.dimension === "human_feedback"));
+    assert.ok(evaluated.partitions.greenBelowNine.some((item) => item.dimension === "hallucination_resistance"));
+    assert.ok(evaluated.partitions.greenBelowNine.some((item) => item.dimension === "user_intent_alignment"));
+    assert.ok(evaluated.optimizationCandidate);
+    assert.equal(evaluated.githubLedgerPayload.humanEvaluation.priority, "highest");
+    assert.equal(evaluated.githubLedgerPayload.optimization.triggered, true);
+  }
 });

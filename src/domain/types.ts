@@ -69,3 +69,48 @@ export interface QualityGateResult {
   failedDimensions: string[];
   deductions: Array<{ dimension: string; reason: string; score: number }>;
 }
+
+export type QualityIcon = "red" | "yellow" | "green" | "gray";
+
+export type ArtifactType = "text_prompt" | "image_prompt" | "workbench_task" | "system_prompt" | "rag_prompt";
+
+export interface EvaluationScoreSet {
+  hallucination_resistance: number;
+  user_intent_alignment: number;
+  completeness: number;
+  factual_accuracy: number;
+  actionability: number;
+  format_compliance: number;
+  model_specific_optimization: number;
+  safety: number;
+  consistency: number;
+  maintainability: number;
+  testability: number;
+  image_prompt_quality?: number;
+  workspace_task_quality?: number;
+}
+
+export interface QualityFinding {
+  id: string;
+  icon: QualityIcon;
+  dimension: string;
+  score: number | null;
+  reason: string;
+  source: "ai" | "human" | "memory" | "regression";
+  priority: number;
+}
+
+export interface FeedbackMemoryDelta {
+  id: string;
+  artifactId: string;
+  artifactType: ArtifactType;
+  versionId: string;
+  targetModelId: string;
+  humanOverridesAi: boolean;
+  repeatedIssueKeys: string[];
+  effectiveStrategies: string[];
+  ineffectiveStrategies: string[];
+  yellowItems: QualityFinding[];
+  greenBelowNineItems: QualityFinding[];
+  createdAt: string;
+}

@@ -118,3 +118,57 @@ Validation:
 - `AI-CHAIN.cmd prompt-v3-verify` passed before upload.
 - GitHub CI passed after upload.
 - `AI-CHAIN.cmd prompt-v3` shows the GitHub remote and clean tracking state.
+
+## 2026-05-07 — Unified Evaluation Gap Closure
+
+User asked what defects remained and required everything feasible to be completed before stopping.
+
+Defects found:
+
+- Feedback was stored, but not yet structured enough as a complete `feedback_memory` decision delta.
+- Red/yellow/green/gray icon rules were not a standalone service.
+- The strict rule "every evaluation triggers GitHub ledger payload and automatic optimization" needed a single engineering entry point.
+- Yellow-first and green-below-9 continuation rules needed tests.
+- GitHub upload of evaluation records still requires a production GitHub App worker; V3 can now emit the required ledger payload.
+
+Implemented:
+
+- `src/quality/icon-rules.ts`
+  - Red/yellow/green/gray scoring rules.
+  - Yellow priority.
+  - Green-below-9 partitioning.
+  - Hallucination and user-intent green-below-9 priority ordering.
+- `src/server/services/unified-evaluation-service.ts`
+  - `evaluateAndOptimizeUnified()`.
+  - Merges AI scores and human feedback with human priority.
+  - Builds `feedbackMemoryDelta`.
+  - Builds `githubLedgerPayload`.
+  - Creates an automatic synthetic optimization candidate after evaluation.
+- `src/app/api/v3/evaluations/unified/route.ts`
+  - `POST /api/v3/evaluations/unified`.
+- `docs/IMPLEMENTATION_GAP_AUDIT_2026-05-07.md`
+  - Documents defects, fixes, and remaining production hardening items.
+- Updated `src/domain/types.ts`.
+- Added service test for:
+  - human feedback priority,
+  - yellow findings,
+  - green hallucination below 9,
+  - green user intent below 9,
+  - GitHub ledger payload,
+  - automatic optimization candidate.
+
+Validation:
+
+- `npm run typecheck` passed.
+- `npm run test:compiled` passed: 17/17.
+- `npm run quality:golden` passed.
+- `npm run schema:validate` passed.
+- `npm run build` passed and includes `/api/v3/evaluations/unified`.
+
+Remaining production hardening, not blockers for local V3 completion:
+
+- Real GitHub App worker to consume `githubLedgerPayload` and push/PR every evaluation record.
+- UI integration for the new unified findings panel.
+- Full Python worker integration with all 9 hallucination detector repositories.
+- PostgreSQL/pgvector or Qdrant production migration.
+- Provider registry validation for the `gpt-image-2` alias.
