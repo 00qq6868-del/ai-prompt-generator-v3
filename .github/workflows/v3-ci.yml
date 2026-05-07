@@ -1,0 +1,26 @@
+name: V3 CI
+
+on:
+  push:
+    branches: ["main", "v3/**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run comparison:validate
+      - run: npm run quality:golden
+      - run: npm run schema:validate
+      - run: npm run build
+      - run: npm run smoke:http
+      - run: npx playwright install chromium
+      - run: npm run e2e:playwright

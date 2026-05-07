@@ -1,0 +1,36 @@
+{
+  "name": "ai-prompt-generator-v3",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Prompt Generator V3 clean-room rebuild with old-vs-new comparison lab.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck && npm run build:test && node --test dist-tests/tests/*.test.js",
+    "build:test": "tsc -p tsconfig.tests.json",
+    "test:compiled": "npm run build:test && node --test dist-tests/tests/*.test.js",
+    "comparison:validate": "npm run build:test && node dist-tests/tests/validate-comparison.js",
+    "quality:golden": "npm run build:test && node dist-tests/tests/run-golden-quality.js",
+    "schema:validate": "node scripts/validate-schema.mjs",
+    "smoke:http": "node scripts/v3-http-smoke.mjs",
+    "e2e:playwright": "node scripts/v3-playwright-e2e.mjs"
+  },
+  "dependencies": {
+    "@next/env": "^16.0.7",
+    "playwright": "^1.57.0",
+    "next": "^16.0.7",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "@types/node": "^22.19.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.0"
+  },
+  "overrides": {
+    "postcss": "^8.5.10"
+  },
+  "devDependencies": {}
+}

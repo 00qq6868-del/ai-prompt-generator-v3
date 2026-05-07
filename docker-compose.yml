@@ -1,0 +1,35 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3200:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://ai_prompt_v3:ai_prompt_v3_password@postgres:5432/ai_prompt_v3
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ai_prompt_v3
+      POSTGRES_PASSWORD: ai_prompt_v3_password
+      POSTGRES_DB: ai_prompt_v3
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ai_prompt_v3 -d ai_prompt_v3"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7
+
+volumes:
+  postgres-data:
