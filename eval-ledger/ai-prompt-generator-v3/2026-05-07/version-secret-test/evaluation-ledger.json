@@ -1,0 +1,31 @@
+{
+  "generatedAt": "2026-05-07T15:02:08.638Z",
+  "project": "ai-prompt-generator-v3",
+  "artifactType": "text_prompt",
+  "promptId": "prompt-secret-test",
+  "promptVersionId": "version-secret-test",
+  "redactedInput": "contact [REDACTED_EMAIL] and [REDACTED_BEARER_TOKEN]",
+  "humanEvaluation": {
+    "priority": "highest"
+  },
+  "optimization": {
+    "triggered": true,
+    "status": "candidate"
+  },
+  "yellowItems": [
+    {
+      "dimension": "user_intent_alignment"
+    }
+  ],
+  "greenBelowNineItems": [
+    {
+      "dimension": "hallucination_resistance"
+    }
+  ],
+  "redItems": [],
+  "regression": {
+    "commands": [
+      "npm run test:compiled"
+    ]
+  }
+}
